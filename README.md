@@ -7,8 +7,7 @@ demos work on: small enough to read in a minute, real enough to have bugs and mi
 
 ```bash
 node bin/tally.mjs add coffee        # coffee: 1
-node bin/tally.mjs add coffee 2      # coffee: 3
-node bin/tally.mjs list              # coffee  3
+node bin/tally.mjs list              # coffee  1
 node bin/tally.mjs reset coffee      # coffee: 0
 ```
 
