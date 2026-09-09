@@ -16,5 +16,7 @@ export function openStore(file) {
     reset(name) { delete counts[name]; save(); },
     /** Every name and its count, most counted first. */
     entries() { return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); },
+    /** The `n` most counted names and their counts, in the same order as `entries()`. */
+    top(n) { return this.entries().slice(0, n); },
   };
 }
