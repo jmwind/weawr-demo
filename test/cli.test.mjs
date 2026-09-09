@@ -28,3 +28,26 @@ test('top refuses a limit that is not a whole number of 1 or more', () => {
     assert.equal(run.stdout, '');
   }
 });
+
+test('undo takes back the last add or reset and prints the count it restored', () => {
+  const file = tmpFile();
+  tally(file, 'add', 'coffee', '2');
+  tally(file, 'add', 'tea');
+  tally(file, 'reset', 'coffee');
+  assert.equal(tally(file, 'undo').stdout, 'coffee: 2\n');
+  assert.equal(tally(file, 'undo').stdout, 'tea: 0\n');
+  assert.equal(tally(file, 'list').stdout, 'coffee\t2\n');
+});
+
+test('undo with nothing to undo fails, including on a tally written before undo existed', () => {
+  const fresh = tally(tmpFile(), 'undo');
+  assert.equal(fresh.status, 1);
+  assert.equal(fresh.stderr, 'tally: nothing to undo\n');
+  assert.equal(fresh.stdout, '');
+  const file = tmpFile();
+  fs.writeFileSync(file, '{ "coffee": 2 }\n');
+  const old = tally(file, 'undo');
+  assert.equal(old.status, 1);
+  assert.equal(old.stderr, 'tally: nothing to undo\n');
+  assert.equal(tally(file, 'list').stdout, 'coffee\t2\n');
+});

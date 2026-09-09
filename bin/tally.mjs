@@ -5,6 +5,7 @@
 //   tally list              every name and its count
 //   tally top [n]           the n most counted names (three by default)
 //   tally reset <name>      forget a name
+//   tally undo              take back the last add or reset
 //
 // Counts live in ./tally.json (or the file TALLY_FILE names).
 import { openStore } from '../src/store.mjs';
@@ -36,6 +37,12 @@ switch (cmd) {
     console.log(`${rest[0]}: 0`);
     break;
   }
+  case 'undo': {
+    const name = store.undo();
+    if (name === null) fail('nothing to undo');
+    console.log(`${name}: ${store.get(name)}`);
+    break;
+  }
   default:
     usage(cmd ? `unknown command ${cmd}` : null);
 }
@@ -46,6 +53,11 @@ function print(entries) {
 
 function usage(problem) {
   if (problem) console.error(`tally: ${problem}`);
-  console.error('usage: tally add <name> [n] | tally list | tally top [n] | tally reset <name>');
+  console.error('usage: tally add <name> [n] | tally list | tally top [n] | tally reset <name> | tally undo');
   process.exit(problem ? 1 : 0);
+}
+
+function fail(problem) {
+  console.error(`tally: ${problem}`);
+  process.exit(1);
 }
