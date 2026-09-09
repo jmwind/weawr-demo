@@ -3,6 +3,7 @@
 //
 //   tally add <name> [n]    count <name> once, or n times
 //   tally list              every name and its count
+//   tally list --json       same, as a JSON array of { name, count }
 //   tally reset <name>      forget a name
 //
 // Counts live in ./tally.json (or the file TALLY_FILE names).
@@ -19,7 +20,12 @@ switch (cmd) {
     break;
   }
   case 'list': {
-    for (const [name, count] of store.entries()) console.log(`${name}\t${count}`);
+    if (rest.includes('--json')) {
+      const entries = store.entries().map(([name, count]) => ({ name, count }));
+      console.log(JSON.stringify(entries));
+    } else {
+      for (const [name, count] of store.entries()) console.log(`${name}\t${count}`);
+    }
     break;
   }
   case 'reset': {
