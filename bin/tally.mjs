@@ -15,7 +15,12 @@ switch (cmd) {
   case 'add': {
     const [name, n = '1'] = rest;
     if (!name) usage('add needs a name');
-    console.log(`${name}: ${store.add(name, Number(n))}`);
+    try {
+      console.log(`${name}: ${store.add(name, Number(n))}`);
+    } catch (err) {
+      if (!(err instanceof RangeError)) throw err;
+      fail(`add ${name} ${n}: ${err.message}`);
+    }
     break;
   }
   case 'list': {
@@ -30,6 +35,11 @@ switch (cmd) {
   }
   default:
     usage(cmd ? `unknown command ${cmd}` : null);
+}
+
+function fail(problem) {
+  console.error(`tally: ${problem}`);
+  process.exit(1);
 }
 
 function usage(problem) {
