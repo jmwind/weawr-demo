@@ -28,3 +28,28 @@ test('top refuses a limit that is not a whole number of 1 or more', () => {
     assert.equal(run.stdout, '');
   }
 });
+
+test('undo reverses successive CLI changes and fails clearly at the beginning', () => {
+  const file = tmpFile();
+  assert.equal(tally(file, 'add', 'coffee', '3').status, 0);
+  assert.equal(tally(file, 'reset', 'coffee').status, 0);
+  assert.equal(tally(file, 'undo').status, 0);
+  assert.equal(tally(file, 'list').stdout, 'coffee\t3\n');
+  assert.equal(tally(file, 'undo').status, 0);
+  assert.equal(tally(file, 'list').stdout, '');
+  const run = tally(file, 'undo');
+  assert.equal(run.status, 1);
+  assert.equal(run.stderr, 'tally: nothing to undo\n');
+  assert.equal(run.stdout, '');
+});
+
+test('undo reports nothing to undo for new and legacy tally files', () => {
+  const file = tmpFile();
+  for (const legacy of [false, true]) {
+    if (legacy) fs.writeFileSync(file, '{"coffee":5}\n');
+    const run = tally(file, 'undo');
+    assert.equal(run.status, 1);
+    assert.equal(run.stderr, 'tally: nothing to undo\n');
+    assert.equal(tally(file, 'list').stdout, legacy ? 'coffee\t5\n' : '');
+  }
+});
