@@ -16,7 +16,7 @@ const store = openStore(process.env.TALLY_FILE || 'tally.json');
 switch (cmd) {
   case 'add': {
     const [name, n = '1'] = rest;
-    if (!name) usage('add needs a name');
+    if (!name) fail('add needs a name', true);
     console.log(`${name}: ${store.add(name, Number(n))}`);
     break;
   }
@@ -27,12 +27,12 @@ switch (cmd) {
   case 'top': {
     const [n = '3'] = rest;
     const limit = Number(n);
-    if (!Number.isInteger(limit) || limit < 1) usage(`top needs a whole number of names, 1 or more, not "${n}"`);
+    if (!Number.isInteger(limit) || limit < 1) fail(`top needs a whole number of names, 1 or more, not "${n}"`, true);
     print(store.top(limit));
     break;
   }
   case 'reset': {
-    if (!rest[0]) usage('reset needs a name');
+    if (!rest[0]) fail('reset needs a name', true);
     store.reset(rest[0]);
     console.log(`${rest[0]}: 0`);
     break;
@@ -44,20 +44,16 @@ switch (cmd) {
     break;
   }
   default:
-    usage(cmd ? `unknown command ${cmd}` : null);
+    fail(cmd ? `unknown command ${cmd}` : null, true);
 }
 
 function print(entries) {
   for (const [name, count] of entries) console.log(`${name}\t${count}`);
 }
 
-function usage(problem) {
+/** Say what went wrong and exit 1; with `showUsage`, print the usage line too (alone, exit 0, when there is no problem). */
+function fail(problem, showUsage = false) {
   if (problem) console.error(`tally: ${problem}`);
-  console.error('usage: tally add <name> [n] | tally list | tally top [n] | tally reset <name> | tally undo');
+  if (showUsage) console.error('usage: tally add <name> [n] | tally list | tally top [n] | tally reset <name> | tally undo');
   process.exit(problem ? 1 : 0);
-}
-
-function fail(problem) {
-  console.error(`tally: ${problem}`);
-  process.exit(1);
 }
