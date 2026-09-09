@@ -25,3 +25,12 @@ test('reset forgets a name; an unknown name counts as zero', () => {
   assert.equal(s.get('x'), 0);
   assert.equal(s.get('never'), 0);
 });
+
+test('add refuses a count that is not a positive whole number', () => {
+  const s = openStore(tmpFile());
+  assert.throws(() => s.add('coffee', NaN), RangeError);
+  assert.throws(() => s.add('coffee', -3), RangeError);
+  assert.throws(() => s.add('coffee', 0), RangeError);
+  assert.throws(() => s.add('coffee', 1.5), RangeError);
+  assert.equal(s.get('coffee'), 0);
+});
