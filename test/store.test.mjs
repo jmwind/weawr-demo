@@ -25,3 +25,16 @@ test('reset forgets a name; an unknown name counts as zero', () => {
   assert.equal(s.get('x'), 0);
   assert.equal(s.get('never'), 0);
 });
+
+test('top returns the most counted names, ties in name order, at most n of them', () => {
+  const s = openStore(tmpFile());
+  s.add('tea', 2);
+  s.add('water', 5);
+  s.add('coffee', 5);
+  s.add('juice', 2);
+  s.add('milk');
+  assert.deepEqual(s.top(), [['coffee', 5], ['water', 5], ['juice', 2]]);
+  assert.deepEqual(s.top(2), [['coffee', 5], ['water', 5]]);
+  assert.deepEqual(s.top(10), s.entries());
+  assert.deepEqual(openStore(tmpFile()).top(), []);
+});

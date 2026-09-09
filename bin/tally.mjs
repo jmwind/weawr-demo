@@ -3,6 +3,7 @@
 //
 //   tally add <name> [n]    count <name> once, or n times
 //   tally list              every name and its count
+//   tally top [n]           the n most counted names (three by default)
 //   tally reset <name>      forget a name
 //
 // Counts live in ./tally.json (or the file TALLY_FILE names).
@@ -19,7 +20,14 @@ switch (cmd) {
     break;
   }
   case 'list': {
-    for (const [name, count] of store.entries()) console.log(`${name}\t${count}`);
+    print(store.entries());
+    break;
+  }
+  case 'top': {
+    const [n = '3'] = rest;
+    const limit = Number(n);
+    if (!Number.isInteger(limit) || limit < 1) usage(`top needs a whole number of names, 1 or more, not "${n}"`);
+    print(store.top(limit));
     break;
   }
   case 'reset': {
@@ -32,8 +40,12 @@ switch (cmd) {
     usage(cmd ? `unknown command ${cmd}` : null);
 }
 
+function print(entries) {
+  for (const [name, count] of entries) console.log(`${name}\t${count}`);
+}
+
 function usage(problem) {
   if (problem) console.error(`tally: ${problem}`);
-  console.error('usage: tally add <name> [n] | tally list | tally reset <name>');
+  console.error('usage: tally add <name> [n] | tally list | tally top [n] | tally reset <name>');
   process.exit(problem ? 1 : 0);
 }

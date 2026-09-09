@@ -8,6 +8,7 @@ demos work on: small enough to read in a minute, real enough to have bugs and mi
 ```bash
 node bin/tally.mjs add coffee        # coffee: 1
 node bin/tally.mjs list              # coffee  1
+node bin/tally.mjs top 10            # coffee  1  (the ten most counted; three without a number)
 node bin/tally.mjs reset coffee      # coffee: 0
 ```
 
