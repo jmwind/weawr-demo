@@ -11,43 +11,49 @@
 import { openStore } from '../src/store.mjs';
 
 const [cmd, ...rest] = process.argv.slice(2);
-const store = openStore(process.env.TALLY_FILE || 'tally.json');
+try {
+  const store = openStore(process.env.TALLY_FILE || 'tally.json');
 
-switch (cmd) {
-  case 'add': {
-    const [name, n = '1'] = rest;
-    if (!name) usage('add needs a name');
-    console.log(`${name}: ${store.add(name, Number(n))}`);
-    break;
-  }
-  case 'list': {
-    print(store.entries());
-    break;
-  }
-  case 'top': {
-    const [n = '3'] = rest;
-    const limit = Number(n);
-    if (!Number.isInteger(limit) || limit < 1) usage(`top needs a whole number of names, 1 or more, not "${n}"`);
-    print(store.top(limit));
-    break;
-  }
-  case 'reset': {
-    if (!rest[0]) usage('reset needs a name');
-    store.reset(rest[0]);
-    console.log(`${rest[0]}: 0`);
-    break;
-  }
-  case 'undo': {
-    if (!store.undo()) {
-      console.error('tally: nothing to undo');
-      process.exitCode = 1;
-    } else {
-      console.log('undone');
+  switch (cmd) {
+    case 'add': {
+      const [name, n = '1'] = rest;
+      if (!name) usage('add needs a name');
+      console.log(`${name}: ${store.add(name, Number(n))}`);
+      break;
     }
-    break;
+    case 'list': {
+      print(store.entries());
+      break;
+    }
+    case 'top': {
+      const [n = '3'] = rest;
+      const limit = Number(n);
+      if (!Number.isInteger(limit) || limit < 1) usage(`top needs a whole number of names, 1 or more, not "${n}"`);
+      print(store.top(limit));
+      break;
+    }
+    case 'reset': {
+      if (!rest[0]) usage('reset needs a name');
+      store.reset(rest[0]);
+      console.log(`${rest[0]}: 0`);
+      break;
+    }
+    case 'undo': {
+      const name = store.undo();
+      if (name === false) {
+        console.error('tally: nothing to undo');
+        process.exitCode = 1;
+      } else {
+        console.log(`${name}: ${store.get(name)}`);
+      }
+      break;
+    }
+    default:
+      usage(cmd ? `unknown command ${cmd}` : null);
   }
-  default:
-    usage(cmd ? `unknown command ${cmd}` : null);
+} catch (error) {
+  console.error(`tally: ${error.message}`);
+  process.exitCode = 1;
 }
 
 function print(entries) {

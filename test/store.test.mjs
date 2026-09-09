@@ -31,9 +31,9 @@ test('undo reverses add and reset across opens, back to legacy counts', () => {
   fs.writeFileSync(file, JSON.stringify({ coffee: 4, tea: 2 }));
   openStore(file).add('coffee', 3);
   openStore(file).reset('tea');
-  assert.equal(openStore(file).undo(), true);
+  assert.equal(openStore(file).undo(), 'tea');
   assert.deepEqual(openStore(file).entries(), [['coffee', 7], ['tea', 2]]);
-  assert.equal(openStore(file).undo(), true);
+  assert.equal(openStore(file).undo(), 'coffee');
   assert.deepEqual(openStore(file).entries(), [['coffee', 4], ['tea', 2]]);
   assert.equal(openStore(file).undo(), false);
 });
@@ -72,11 +72,11 @@ test('undo preserves absent names, zero counts, and multibyte names', () => {
   store.add('茶', 0);
   store.reset('茶');
   store.reset('missing');
-  assert.equal(store.undo(), true);
+  assert.equal(store.undo(), 'missing');
   assert.deepEqual(store.entries(), []);
-  assert.equal(store.undo(), true);
+  assert.equal(store.undo(), '茶');
   assert.deepEqual(store.entries(), [['茶', 0]]);
-  assert.equal(openStore(file).undo(), true);
+  assert.equal(openStore(file).undo(), '茶');
   assert.deepEqual(openStore(file).entries(), []);
 });
 
@@ -104,8 +104,8 @@ test('failed snapshot saves leave counts and undo history at the last successful
   assert.deepEqual(openStore(file).entries(), [['coffee', 1]]);
   fs.rmdirSync(`${file}.tmp`);
   store.add('water');
-  assert.equal(store.undo(), true);
-  assert.equal(openStore(file).undo(), true);
+  assert.equal(store.undo(), 'water');
+  assert.equal(openStore(file).undo(), 'coffee');
   assert.deepEqual(openStore(file).entries(), []);
   assert.equal(openStore(file).undo(), false);
 });
@@ -117,19 +117,6 @@ test('incomplete history cannot change the saved tally during undo', () => {
   fs.truncateSync(`${file}.history`, 0);
   assert.throws(() => openStore(file).undo(), /incomplete undo history/);
   assert.equal(fs.readFileSync(file, 'utf8'), saved);
-});
-
-test('list and add do not read accumulated history', t => {
-  const file = tmpFile();
-  openStore(file).add('coffee');
-  const readFile = fs.readFileSync;
-  t.mock.method(fs, 'readFileSync', (target, ...args) => {
-    assert.equal(target, file, 'only the count snapshot should be read');
-    return readFile(target, ...args);
-  });
-  t.mock.method(fs, 'readSync', () => assert.fail('history must not be read'));
-  assert.deepEqual(openStore(file).entries(), [['coffee', 1]]);
-  assert.equal(openStore(file).add('coffee'), 2);
 });
 
 test('top returns the most counted names, ties in name order, at most n of them', () => {

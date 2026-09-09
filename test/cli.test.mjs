@@ -33,9 +33,13 @@ test('undo reverses successive CLI changes and fails clearly at the beginning', 
   const file = tmpFile();
   assert.equal(tally(file, 'add', 'coffee', '3').status, 0);
   assert.equal(tally(file, 'reset', 'coffee').status, 0);
-  assert.equal(tally(file, 'undo').status, 0);
+  const resetUndo = tally(file, 'undo');
+  assert.equal(resetUndo.status, 0);
+  assert.equal(resetUndo.stdout, 'coffee: 3\n');
   assert.equal(tally(file, 'list').stdout, 'coffee\t3\n');
-  assert.equal(tally(file, 'undo').status, 0);
+  const addUndo = tally(file, 'undo');
+  assert.equal(addUndo.status, 0);
+  assert.equal(addUndo.stdout, 'coffee: 0\n');
   assert.equal(tally(file, 'list').stdout, '');
   const run = tally(file, 'undo');
   assert.equal(run.status, 1);
@@ -52,4 +56,29 @@ test('undo reports nothing to undo for new and legacy tally files', () => {
     assert.equal(run.stderr, 'tally: nothing to undo\n');
     assert.equal(tally(file, 'list').stdout, legacy ? 'coffee\t5\n' : '');
   }
+});
+
+test('undo reports missing or incomplete history without a stack trace or changing counts', () => {
+  for (const missing of [true, false]) {
+    const file = tmpFile();
+    tally(file, 'add', 'coffee');
+    const before = fs.readFileSync(file, 'utf8');
+    if (missing) fs.unlinkSync(`${file}.history`);
+    else fs.truncateSync(`${file}.history`, 0);
+    const run = tally(file, 'undo');
+    assert.equal(run.status, 1);
+    assert.equal(run.stdout, '');
+    assert.match(run.stderr, /^tally: .*history[^\n]*\n$/);
+    assert.equal(fs.readFileSync(file, 'utf8'), before);
+  }
+});
+
+test('list reports invalid JSON without a stack trace or replacing the file', () => {
+  const file = tmpFile();
+  fs.writeFileSync(file, 'not JSON');
+  const run = tally(file, 'list');
+  assert.equal(run.status, 1);
+  assert.equal(run.stdout, '');
+  assert.match(run.stderr, /^tally: [^\n]+\n$/);
+  assert.equal(fs.readFileSync(file, 'utf8'), 'not JSON');
 });

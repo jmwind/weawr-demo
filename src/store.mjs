@@ -51,7 +51,7 @@ export function openStore(file) {
       delete next[name];
       change(name, next);
     },
-    /** Revert one add/reset; return false when there is no earlier change. */
+    /** Revert one add/reset and return its name, or false when there is no earlier change. */
     undo() {
       if (!head) return false;
       const fd = fs.openSync(journal, 'r');
@@ -67,7 +67,7 @@ export function openStore(file) {
       const next = { ...counts, [record.name]: record.count };
       if (!record.existed) delete next[record.name];
       save(next, record.previous);
-      return true;
+      return record.name;
     },
     entries,
     /** The `n` most counted names and their counts, in the order `entries` uses. */
