@@ -26,9 +26,9 @@ test('quick start lines run as written and print what the comment says', () => {
   }
 });
 
-test('quick start shows every command the command line accepts', () => {
+test('quick start shows every command the command line accepts, once each', () => {
   const usage = fs.readFileSync(path.join(root, 'bin/tally.mjs'), 'utf8').match(/usage: (.*)'/)[1];
   const commands = usage.split('|').map((s) => s.trim().split(' ')[1]);
-  const shown = new Set(lines.map(({ command }) => command.split(/\s+/)[2]));
-  assert.deepEqual([...shown].sort(), [...new Set(commands)].sort());
+  const shown = lines.map(({ command }) => command.split(/\s+/)[2]);
+  assert.deepEqual(shown.sort(), commands.sort());
 });
