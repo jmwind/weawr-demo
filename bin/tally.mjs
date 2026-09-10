@@ -5,7 +5,7 @@
 //   tally list              every name and its count
 //   tally list --json       every name and its count, as JSON
 //   tally reset <name>      forget a name
-//   tally undo             take back the last add or reset
+//   tally undo              take back the last add or reset
 //
 // Counts live in ./tally.json (or the file TALLY_FILE names).
 import { openStore } from '../src/store.mjs';

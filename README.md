@@ -6,8 +6,8 @@ demos work on: small enough to read in a minute, real enough to have bugs and mi
 ## Quick start
 
 ```bash
-node bin/tally.mjs count coffee      # coffee: 1
-node bin/tally.mjs count coffee 2    # coffee: 3
+node bin/tally.mjs add coffee        # coffee: 1
+node bin/tally.mjs add coffee 2      # coffee: 3
 node bin/tally.mjs list              # coffee  3
 node bin/tally.mjs list --json       # [{"name":"coffee","count":3}]
 node bin/tally.mjs reset coffee      # coffee: 0
