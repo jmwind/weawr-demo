@@ -11,6 +11,7 @@ node bin/tally.mjs count coffee 2    # coffee: 3
 node bin/tally.mjs list              # coffee  3
 node bin/tally.mjs list --json       # [{"name":"coffee","count":3}]
 node bin/tally.mjs reset coffee      # coffee: 0
+node bin/tally.mjs undo              # undo: coffee: 3
 ```
 
 Counts are kept in `tally.json` in the current directory, or in the file `TALLY_FILE` names.
