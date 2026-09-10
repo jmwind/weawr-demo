@@ -25,3 +25,11 @@ test('reset forgets a name; an unknown name counts as zero', () => {
   assert.equal(s.get('x'), 0);
   assert.equal(s.get('never'), 0);
 });
+
+test('toJSON gives entries() order as { name, count } objects', () => {
+  const s = openStore(tmpFile());
+  s.add('coffee');
+  s.add('coffee');
+  s.add('tea', 3);
+  assert.deepEqual(s.toJSON(), [{ name: 'tea', count: 3 }, { name: 'coffee', count: 2 }]);
+});

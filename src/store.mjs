@@ -16,5 +16,7 @@ export function openStore(file) {
     reset(name) { delete counts[name]; save(); },
     /** Every name and its count, most counted first. */
     entries() { return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); },
+    /** Every name and its count, in `entries()` order, as plain objects. */
+    toJSON() { return this.entries().map(([name, count]) => ({ name, count })); },
   };
 }
