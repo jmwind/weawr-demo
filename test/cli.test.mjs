@@ -30,8 +30,8 @@ test('undo reverses add and reset in separate CLI invocations', () => {
   fs.writeFileSync(file, '{"coffee":2}');
   run(file, ['add', 'tea', '3']);
   run(file, ['reset', 'coffee']);
-  assert.equal(run(file, ['undo']), 'undone\n');
-  assert.equal(run(file, ['undo']), 'undone\n');
+  assert.equal(run(file, ['undo']), 'coffee: 2\n');
+  assert.equal(run(file, ['undo']), 'tea: 0\n');
   assert.deepEqual(JSON.parse(run(file, ['list', '--json'])), [{ name: 'coffee', count: 2 }]);
   assert.throws(() => run(file, ['undo']), err => {
     assert.equal(err.status, 1);

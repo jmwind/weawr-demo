@@ -117,3 +117,11 @@ test('a failed counts write does not leave a change in memory or history', () =>
   assert.deepEqual(s.entries(), []);
   assert.throws(() => s.undo(), /nothing to undo/);
 });
+
+test('undo returns the restored name and count, including removal', () => {
+  const s = openStore(tmpFile());
+  s.add('coffee', 3);
+  s.reset('coffee');
+  assert.deepEqual(s.undo(), { name: 'coffee', count: 3 });
+  assert.deepEqual(s.undo(), { name: 'coffee', count: 0 });
+});

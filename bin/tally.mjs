@@ -41,8 +41,8 @@ switch (cmd) {
   case 'undo': {
     if (rest.length) usage('undo takes no arguments');
     try {
-      store.undo();
-      console.log('undone');
+      const { name, count } = store.undo();
+      console.log(`${name}: ${count}`);
     } catch (err) {
       usage(err.message);
     }

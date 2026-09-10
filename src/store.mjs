@@ -1,31 +1,18 @@
 // Counts stay in the JSON file; previous values form a stack in its .history sidecar.
 import fs from 'node:fs';
 
-// Read only the final record, even when the history is large.
+// Only undo reads history; add and list remain independent of its length.
 function lastChange(file) {
-  let fd;
-  try { fd = fs.openSync(file, 'r'); } catch (err) {
+  let history;
+  try { history = fs.readFileSync(file, 'utf8'); } catch (err) {
     if (err.code === 'ENOENT') throw new Error('nothing to undo');
     throw err;
   }
-  try {
-    let end = fs.fstatSync(fd).size;
-    if (!end) throw new Error('nothing to undo');
-    end--; // Skip the trailing newline.
-    const chunks = [];
-    while (end > 0) {
-      const start = Math.max(0, end - 4096);
-      const chunk = Buffer.alloc(end - start);
-      fs.readSync(fd, chunk, 0, chunk.length, start);
-      const newline = chunk.lastIndexOf(10);
-      chunks.unshift(chunk.subarray(newline + 1));
-      if (newline !== -1) {
-        return { offset: start + newline + 1, change: JSON.parse(Buffer.concat(chunks).toString('utf8')) };
-      }
-      end = start;
-    }
-    return { offset: 0, change: JSON.parse(Buffer.concat(chunks).toString('utf8')) };
-  } finally { fs.closeSync(fd); }
+  if (!history) throw new Error('nothing to undo');
+  const records = history.trimEnd().split('\n');
+  const record = records.pop();
+  const remaining = records.length ? records.join('\n') + '\n' : '';
+  return { offset: Buffer.byteLength(remaining), change: JSON.parse(record) };
 }
 
 export function openStore(file) {
@@ -67,6 +54,7 @@ export function openStore(file) {
       restore(name, value);
       try { save(); } catch (err) { restore(name, before); throw err; }
       fs.truncateSync(history, offset);
+      return { name, count: value ?? 0 };
     },
     /** Every name and its count, most counted first. */
     entries() { return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); },
