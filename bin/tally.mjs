@@ -15,11 +15,7 @@ switch (cmd) {
   case 'add': {
     const [name, n = '1'] = rest;
     if (!name) usage('add needs a name');
-    try {
-      console.log(`${name}: ${store.add(name, Number(n))}`);
-    } catch (err) {
-      usage(err.message);
-    }
+    console.log(`${name}: ${store.add(name, Number(n))}`);
     break;
   }
   case 'list': {

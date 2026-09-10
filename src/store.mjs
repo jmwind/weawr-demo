@@ -6,11 +6,8 @@ export function openStore(file) {
   try { counts = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { /* a new tally */ }
   const save = () => fs.writeFileSync(file, JSON.stringify(counts, null, 2) + '\n');
   return {
-    /** Count `name` `by` more times (once by default). `by` must be a positive integer. */
+    /** Count `name` `by` more times (once by default). */
     add(name, by = 1) {
-      if (!Number.isInteger(by) || by <= 0) {
-        throw new RangeError(`count must be a positive integer, got ${by}`);
-      }
       counts[name] = (counts[name] || 0) + by;
       save();
       return counts[name];
