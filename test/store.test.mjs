@@ -33,3 +33,12 @@ test('toJSON gives entries() order as { name, count } objects', () => {
   s.add('tea', 3);
   assert.deepEqual(s.toJSON(), [{ name: 'tea', count: 3 }, { name: 'coffee', count: 2 }]);
 });
+
+test('add refuses a count that is not a positive integer, and leaves the tally unchanged', () => {
+  const s = openStore(tmpFile());
+  s.add('coffee', 2);
+  for (const by of [NaN, -3, 0, 1.5]) {
+    assert.throws(() => s.add('coffee', by), RangeError);
+  }
+  assert.equal(s.get('coffee'), 2);
+});
