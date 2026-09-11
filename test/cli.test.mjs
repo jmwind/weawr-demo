@@ -24,3 +24,33 @@ test('list --json prints entries as a JSON array of {name, count}, in list order
     { name: 'coffee', count: 2 },
   ]);
 });
+
+test('undo, undo after add and reset leaves the tally as it was before both changes', () => {
+  const file = tmpFile();
+  run(file, ['add', 'coffee']);
+  run(file, ['reset', 'coffee']);
+
+  run(file, ['undo']); // takes back the reset
+  assert.deepEqual(JSON.parse(run(file, ['list', '--json'])), [{ name: 'coffee', count: 1 }]);
+
+  run(file, ['undo']); // takes back the add
+  assert.deepEqual(JSON.parse(run(file, ['list', '--json'])), []);
+});
+
+test('undo with nothing to undo fails with a message and exit code 1', () => {
+  const file = tmpFile();
+  assert.throws(
+    () => run(file, ['undo']),
+    (err) => err.status === 1 && /nothing to undo/.test(err.stderr.toString()),
+  );
+});
+
+test('undo on a tally.json from before undo existed says there is nothing to undo', () => {
+  const file = tmpFile();
+  fs.writeFileSync(file, JSON.stringify({ coffee: 3 }));
+  assert.throws(
+    () => run(file, ['undo']),
+    (err) => err.status === 1 && /nothing to undo/.test(err.stderr.toString()),
+  );
+  assert.deepEqual(JSON.parse(run(file, ['list', '--json'])), [{ name: 'coffee', count: 3 }]);
+});

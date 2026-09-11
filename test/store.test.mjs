@@ -34,3 +34,28 @@ test('add refuses a count that is not a positive integer, and leaves the tally u
   }
   assert.equal(s.get('coffee'), 2);
 });
+
+test('undo reverses the last add or reset, one step at a time, across opens', () => {
+  const file = tmpFile();
+  openStore(file).add('coffee'); // coffee: 1
+  openStore(file).reset('coffee'); // coffee: 0 (forgotten)
+
+  openStore(file).undo(); // undoes the reset
+  assert.equal(openStore(file).get('coffee'), 1);
+
+  openStore(file).undo(); // undoes the add
+  assert.equal(openStore(file).get('coffee'), 0);
+});
+
+test('undo with nothing to undo throws', () => {
+  const s = openStore(tmpFile());
+  assert.throws(() => s.undo(), /nothing to undo/);
+});
+
+test('a plain tally.json with no history still loads, and has nothing to undo', () => {
+  const file = tmpFile();
+  fs.writeFileSync(file, JSON.stringify({ coffee: 3 }));
+  const s = openStore(file);
+  assert.equal(s.get('coffee'), 3);
+  assert.throws(() => s.undo(), /nothing to undo/);
+});
